@@ -94,7 +94,9 @@ fn main() -> Result<(), String> {
     dependencies.dedup_by(|a, b| a == b);
 
     for dep in dependencies {
-        println!("mvn({})", dep);
+        if !provided.contains(&dep) {
+            println!("mvn({})", dep);
+        }
     }
 
     Ok(())
