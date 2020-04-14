@@ -57,6 +57,24 @@ fn main() -> Result<(), String> {
             },
         };
 
+        let mut _active_profile: Option<String> = None;
+        let mut profile_modules: Vec<String> = Vec::new();
+
+        if let Some(profiles) = &project.profiles {
+            for profile in &profiles.profiles {
+                if let Some(activation) = &profile.activation {
+                    if let Some(true) = activation.active_by_default {
+                        _active_profile = Some(profile.id.clone());
+
+                        if let Some(modules) = &profile.modules {
+                            profile_modules
+                                .extend(modules.modules.iter().map(|s| s.to_owned()).collect::<Vec<String>>());
+                        };
+                    };
+                };
+            }
+        };
+
         if let Some(parent) = &project.parent {
             dependencies.push(format!("{}:{}", &parent.group_id, &parent.artifact_id));
         }
@@ -73,11 +91,21 @@ fn main() -> Result<(), String> {
             }
         };
 
+        if let Some(build) = &project.build {
+            if let Some(plugins) = &build.plugins {
+                for plugin in &plugins.plugins {
+                    dependencies.push(format!("{}:{}", &plugin.group_id, &plugin.artifact_id));
+                }
+            }
+        }
+
         if let Some(submodules) = &project.modules {
             for module in &submodules.modules {
                 modules.push(format!("{}/{}", name, module));
             }
         };
+
+        modules.extend(profile_modules);
 
         processed.push(name);
     }

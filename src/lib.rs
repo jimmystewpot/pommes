@@ -190,13 +190,13 @@ pub struct Plugins {
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct PluginManagement {
-    plugins: Plugins,
+    pub plugins: Plugins,
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct Plugin {
-    #[serde(rename = "groupId")]
-    pub group_id: Option<String>,
+    #[serde(rename = "groupId", default = "default_plugin_group_id")]
+    pub group_id: String,
     #[serde(rename = "artifactId")]
     pub artifact_id: String,
     pub version: Option<String>,
@@ -204,6 +204,10 @@ pub struct Plugin {
     pub inherited: Option<bool>,
     pub dependencies: Option<Dependencies>,
     pub executions: Option<Executions>,
+}
+
+fn default_plugin_group_id() -> String {
+    String::from("org.apache.maven.plugins")
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
@@ -214,16 +218,16 @@ pub struct Executions {
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct Execution {
-    id: String,
-    goals: Goals,
-    phase: String,
-    inherited: Option<bool>,
+    pub id: String,
+    pub goals: Goals,
+    pub phase: String,
+    pub inherited: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct Goals {
     #[serde(rename = "goal")]
-    goals: Vec<String>,
+    pub goals: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
@@ -244,20 +248,20 @@ pub struct Extension {
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct Profiles {
     #[serde(rename = "profile")]
-    profiles: Vec<Profile>,
+    pub profiles: Vec<Profile>,
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct Profile {
-    id: String,
-    activation: Option<Activation>,
-    modules: Option<Modules>,
+    pub id: String,
+    pub activation: Option<Activation>,
+    pub modules: Option<Modules>,
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct Activation {
     #[serde(rename = "activeByDefault")]
-    active_by_default: Option<bool>,
+    pub active_by_default: Option<bool>,
 }
 
 #[cfg(test)]
