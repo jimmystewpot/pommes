@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use structopt::StructOpt;
 
-use pomm::Project;
+use pomm::parser::Project;
 
 #[derive(Debug, StructOpt)]
 struct CliOptions {
@@ -64,7 +64,9 @@ fn main() -> Result<(), String> {
             for profile in &profiles.profiles {
                 if let Some(activation) = &profile.activation {
                     if let Some(true) = activation.active_by_default {
-                        _active_profile = Some(profile.id.clone());
+                        if let Some(id) = &profile.id {
+                            _active_profile = Some(id.to_owned());
+                        }
 
                         if let Some(modules) = &profile.modules {
                             profile_modules

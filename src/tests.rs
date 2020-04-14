@@ -1,4 +1,4 @@
-use crate::*;
+use crate::parser::*;
 
 #[test]
 fn de_project() {
@@ -34,14 +34,6 @@ fn de_project() {
         group_id: Some(String::from("io.pagure.java")),
         artifact_id: String::from("maven.rs"),
         version: Some(String::from("0.0.0")),
-        name: None,
-        description: None,
-        url: None,
-        inception_year: None,
-        licenses: None,
-        organization: None,
-        developers: None,
-        contributors: None,
         packaging: Some(String::from("jar")),
         parent: Some(Parent {
             group_id: String::from("io.pagure"),
@@ -58,12 +50,9 @@ fn de_project() {
                 optional: Some(true),
             }],
         }),
-        dependency_management: None,
         modules: Some(Modules {
             modules: vec![String::from("test")],
-        }),
-        build: None,
-        profiles: None,
+        }), ..Default::default()
     };
 
     let parsed: Project = serde_xml_rs::from_str(string).unwrap();
