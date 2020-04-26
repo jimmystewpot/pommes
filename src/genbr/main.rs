@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use structopt::StructOpt;
 
-use pomm::parser::Project;
+use pomm::simpler::Project;
 
 #[derive(Debug, StructOpt)]
 struct CliOptions {
@@ -40,13 +40,15 @@ fn main() -> Result<(), String> {
             },
         };
 
-        let project: Project = match serde_xml_rs::from_str(&contents) {
+        let project: pomm::parser::Project = match serde_xml_rs::from_str(&contents) {
             Ok(project) => project,
             Err(error) => {
                 mod_error.push((name, error.to_string()));
                 continue;
             },
         };
+
+        let project: Project = project.into();
 
         match (&project.group_id, &project.parent) {
             (Some(group_id), _) => provided.push(format!("{}:{}", group_id, &project.artifact_id)),
@@ -60,52 +62,41 @@ fn main() -> Result<(), String> {
         let mut _active_profile: Option<String> = None;
         let mut profile_modules: Vec<String> = Vec::new();
 
-        if let Some(profiles) = &project.profiles {
-            for profile in &profiles.profiles {
-                if let Some(activation) = &profile.activation {
-                    if let Some(true) = activation.active_by_default {
-                        if let Some(id) = &profile.id {
-                            _active_profile = Some(id.to_owned());
-                        }
+        for profile in &project.profiles {
+            if let Some(activation) = &profile.activation {
+                if let Some(true) = activation.active_by_default {
+                    if let Some(id) = &profile.id {
+                        _active_profile = Some(id.to_owned());
+                    }
 
-                        if let Some(modules) = &profile.modules {
-                            profile_modules
-                                .extend(modules.modules.iter().map(|s| s.to_owned()).collect::<Vec<String>>());
-                        };
-                    };
+                    profile_modules.extend(profile.modules.clone());
                 };
-            }
-        };
+            };
+        }
 
         if let Some(parent) = &project.parent {
             dependencies.push(format!("{}:{}", &parent.group_id, &parent.artifact_id));
         }
 
-        if let Some(deps) = &project.dependencies {
-            for dep in &deps.dependencies {
-                if let Some(scope) = &dep.scope {
-                    if scope == "test" && !args.with_tests {
-                        continue;
-                    };
+        for dep in &project.dependencies {
+            if let Some(scope) = &dep.scope {
+                if scope == "test" && !args.with_tests {
+                    continue;
                 };
+            };
 
-                dependencies.push(format!("{}:{}", &dep.group_id, &dep.artifact_id));
-            }
-        };
+            dependencies.push(format!("{}:{}", &dep.group_id, &dep.artifact_id));
+        }
 
         if let Some(build) = &project.build {
-            if let Some(plugins) = &build.plugins {
-                for plugin in &plugins.plugins {
-                    dependencies.push(format!("{}:{}", &plugin.group_id, &plugin.artifact_id));
-                }
+            for plugin in &build.plugins {
+                dependencies.push(format!("{}:{}", &plugin.group_id, &plugin.artifact_id));
             }
         }
 
-        if let Some(submodules) = &project.modules {
-            for module in &submodules.modules {
-                modules.push(format!("{}/{}", name, module));
-            }
-        };
+        for module in &project.modules {
+            modules.push(format!("{}/{}", name, module));
+        }
 
         modules.extend(profile_modules);
 

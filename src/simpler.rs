@@ -381,7 +381,9 @@ pub struct Activation {
 
 impl From<parser::Activation> for Activation {
     fn from(activation: parser::Activation) -> Self {
-        Activation { active_by_default: activation.active_by_default }
+        Activation {
+            active_by_default: activation.active_by_default,
+        }
     }
 }
 
@@ -393,6 +395,9 @@ pub struct Repository {
 
 impl From<parser::Repository> for Repository {
     fn from(repo: parser::Repository) -> Self {
-        Repository { id: repo.id, url: repo.url }
+        Repository {
+            id: repo.id,
+            url: repo.url,
+        }
     }
 }

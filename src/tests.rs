@@ -52,7 +52,8 @@ fn de_project() {
         }),
         modules: Some(Modules {
             modules: vec![String::from("test")],
-        }), ..Default::default()
+        }),
+        ..Default::default()
     };
 
     let parsed: Project = serde_xml_rs::from_str(string).unwrap();
