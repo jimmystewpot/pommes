@@ -1,5 +1,5 @@
 [package]
-name = "pomm"
+name = "pommes"
 description = "project object model model (and parser using serde)"
 license = "MIT OR Apache-2.0"
 

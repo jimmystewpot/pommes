@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use glob::glob;
 
-use pomm::Project;
+use pommes::Project;
 
 #[test]
 fn all() {

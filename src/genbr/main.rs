@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use structopt::StructOpt;
 
-use pomm::Project;
+use pommes::Project;
 
 #[derive(Debug, StructOpt)]
 struct CliOptions {
@@ -16,12 +16,12 @@ fn main() -> Result<(), String> {
     let args: CliOptions = CliOptions::from_args();
 
     let mut modules: Vec<String> = args.modules.iter().map(|s| s.to_string()).collect();
-
-    let mut provided: Vec<String> = Vec::new();
     let mut processed: Vec<String> = Vec::new();
-    let mut mod_error: Vec<(String, String)> = Vec::new();
 
-    let mut dependencies: Vec<String> = Vec::new();
+    let mut provided: Vec<(String, String)> = Vec::new();
+    let mut dependencies: Vec<(String, String)> = Vec::new();
+
+    let mut mod_error: Vec<(String, String)> = Vec::new();
 
     while !modules.is_empty() {
         let name = modules.remove(0);
@@ -49,8 +49,8 @@ fn main() -> Result<(), String> {
         };
 
         match (&project.group_id, &project.parent) {
-            (Some(group_id), _) => provided.push(format!("{}:{}", group_id, &project.artifact_id)),
-            (None, Some(parent)) => provided.push(format!("{}:{}", &parent.group_id, &project.artifact_id)),
+            (Some(group_id), _) => provided.push((group_id.to_string(), project.artifact_id.to_string())),
+            (None, Some(parent)) => provided.push((parent.group_id.to_string(), project.artifact_id.to_string())),
             (None, None) => {
                 mod_error.push((name, String::from("Unable to determine groupId.")));
                 continue;
@@ -77,7 +77,7 @@ fn main() -> Result<(), String> {
         }
 
         if let Some(parent) = &project.parent {
-            dependencies.push(format!("{}:{}", &parent.group_id, &parent.artifact_id));
+            dependencies.push((parent.group_id.to_string(), parent.artifact_id.to_string()));
         }
 
         if let Some(deps) = &project.dependencies {
@@ -88,14 +88,14 @@ fn main() -> Result<(), String> {
                     };
                 };
 
-                dependencies.push(format!("{}:{}", &dep.group_id, &dep.artifact_id));
+                dependencies.push((dep.group_id.to_string(), dep.artifact_id.to_string()));
             }
         }
 
         if let Some(build) = &project.build {
             if let Some(plugins) = &build.plugins {
                 for plugin in &plugins.plugins {
-                    dependencies.push(format!("{}:{}", &plugin.group_id, &plugin.artifact_id));
+                    dependencies.push((plugin.group_id.to_string(), plugin.artifact_id.to_string()));
                 }
             }
         }
@@ -124,7 +124,7 @@ fn main() -> Result<(), String> {
 
     for dep in dependencies {
         if !provided.contains(&dep) {
-            println!("mvn({})", dep);
+            println!("mvn({}:{})", dep.0, dep.1);
         }
     }
 
