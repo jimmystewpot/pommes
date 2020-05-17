@@ -2,8 +2,8 @@
 #![warn(clippy::result_unwrap_used)]
 #![warn(clippy::option_unwrap_used)]
 
-pub mod parser;
-pub mod simpler;
+mod parser;
+pub use parser::*;
 
 #[cfg(test)]
 mod tests;

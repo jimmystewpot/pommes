@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use glob::glob;
 
-use pomm;
+use pomm::Project;
 
 #[test]
 fn all() {
@@ -12,8 +12,6 @@ fn all() {
         println!("path: {}", &path.display());
 
         let contents = read_to_string(path).unwrap();
-        let parsed: pomm::parser::Project = serde_xml_rs::from_str(&contents).unwrap();
-        let _project: pomm::simpler::Project = parsed.into();
-        //println!("{:#?}", project);
+        let _parsed: Project = serde_xml_rs::from_str(&contents).unwrap();
     }
 }
