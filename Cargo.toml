@@ -10,7 +10,7 @@ authors = ["Fabio Valentini <decathorpe@gmail.com>"]
 readme = "README.md"
 categories = ["parser-implementations"]
 keywords = ["maven", "pom", "serde", "xml"]
-repository = "https://pagure.io/ironthree/pomm"
+repository = "https://pagure.io/ironthree/pommes"
 
 [[bin]]
 name = "mvn-genbr"
