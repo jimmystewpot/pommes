@@ -137,10 +137,8 @@ fn main() -> Result<(), String> {
 
     print!("{}", &output);
 
-    if args.write_to_file {
-        if let Err(_) = fs::write(".mvn-genbr", &output) {
-            eprintln!("Failed to write results to file '.mvn-genbr'.");
-        }
+    if args.write_to_file && fs::write(".mvn-genbr", &output).is_err() {
+        eprintln!("Failed to write results to file '.mvn-genbr'.");
     }
 
     Ok(())
