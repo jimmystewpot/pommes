@@ -7,9 +7,14 @@ use pommes::Project;
 
 #[derive(Debug, StructOpt)]
 struct CliOptions {
+    /// module root paths to consider for dependency resolution
     modules: Vec<String>,
+    /// include dependencies with "test" scope
     #[structopt(long, short = "t")]
     with_tests: bool,
+    /// additionally write generated dependencies to file for debugging
+    #[structopt(long, short = "w")]
+    write_to_file: bool,
 }
 
 fn main() -> Result<(), String> {
@@ -122,9 +127,19 @@ fn main() -> Result<(), String> {
     dependencies.sort();
     dependencies.dedup_by(|a, b| a == b);
 
+    let mut output = String::new();
+
     for dep in dependencies {
         if !provided.contains(&dep) {
-            println!("mvn({}:{})", dep.0, dep.1);
+            output.push_str(&format!("mvn({}:{})\n", dep.0, dep.1));
+        }
+    }
+
+    print!("{}", &output);
+
+    if args.write_to_file {
+        if let Err(_) = fs::write(".mvn-genbr", &output) {
+            eprintln!("Failed to write results to file '.mvn-genbr'.");
         }
     }
 
