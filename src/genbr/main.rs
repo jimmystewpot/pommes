@@ -7,12 +7,12 @@ use pommes::Project;
 
 #[derive(Debug, StructOpt)]
 struct CliOptions {
-    /// module root paths to consider for dependency resolution
+    /// Module root paths to consider for dependency resolution
     modules: Vec<String>,
-    /// include dependencies with "test" scope
+    /// Include dependencies with "test" scope
     #[structopt(long, short = "t")]
     with_tests: bool,
-    /// additionally write generated dependencies to file for debugging
+    /// Additionally write dependencies to '.mvn-genbr' file
     #[structopt(long, short = "w")]
     write_to_file: bool,
 }
