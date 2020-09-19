@@ -91,6 +91,10 @@ fn main() -> Result<(), String> {
                     if scope == "test" && !args.with_tests {
                         continue;
                     };
+
+                    if scope == "provided" {
+                        continue;
+                    }
                 };
 
                 dependencies.push((dep.group_id.to_string(), dep.artifact_id.to_string()));
