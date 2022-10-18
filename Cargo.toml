@@ -17,9 +17,9 @@ name = "mvn-genbr"
 path = "src/genbr/main.rs"
 
 [dependencies]
-serde = { version = "^1.0", features = ["derive"] }
-serde-xml-rs = "^0.4"
-structopt = { version = "^0.3", features = ["wrap_help"] }
+serde = { version = "1.0", features = ["derive"] }
+serde-xml-rs = "0.6"
+structopt = { version = "0.3", features = ["wrap_help"] }
 
 [dev-dependencies]
 glob = "^0.3"
