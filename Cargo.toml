@@ -1,9 +1,9 @@
 [package]
 name = "pommes"
-description = "project object model model (and parser using serde)"
+description = "Project object model (POM) model and parser"
 license = "MIT OR Apache-2.0"
 
-version = "0.0.2"
+version = "0.0.3"
 edition = "2018"
 
 authors = ["Fabio Valentini <decathorpe@gmail.com>"]
@@ -29,3 +29,5 @@ codegen-units = 1
 lto = true
 opt-level = 3
 
+[badges]
+maintenance = { status = "deprecated" }

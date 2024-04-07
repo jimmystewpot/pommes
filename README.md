@@ -1,4 +1,6 @@
-# project object model model (and parser)
+# Project object model (POM) model and parser (DEPRECATED)
+
+**WARNING**: This project is no longer actively developed.
 
 This project contains a model definition of maven POM files, with it an easy way
 to parse `pom.xml` files into data structures using `serde` / `serde-xml-rs`.
