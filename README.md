@@ -1,4 +1,4 @@
-# Project object model (POM) model and parser (DEPRECATED)
+# Project object model (POM) model and parser (DEPRECATED) **FORK**
 
 **WARNING**: This project is no longer actively developed.
 
