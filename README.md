@@ -1,6 +1,6 @@
-# Project object model (POM) model and parser (DEPRECATED) **FORK**
+# Project object model (POM) model and parser
 
-**WARNING**: This project is no longer actively developed.
+This is a FORK from **https://pagure.io/ironthree/pommes/tree/master**
 
 This project contains a model definition of maven POM files, with it an easy way
 to parse `pom.xml` files into data structures using `serde` / `serde-xml-rs`.
