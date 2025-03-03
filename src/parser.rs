@@ -17,6 +17,8 @@ pub struct Project {
     pub group_id: Option<String>,
     #[serde(rename = "inceptionYear")]
     pub inception_year: Option<String>,
+    #[serde(rename = "issueManagement")]
+    pub issue_management: Option<IssueManagement>,
     pub licenses: Option<Licenses>,
     #[serde(rename = "modelVersion")]
     pub model_version: String,
@@ -46,6 +48,12 @@ pub struct License {
     pub comments: Option<String>,
     pub distribution: Option<String>,
     pub name: String,
+    pub url: Option<String>,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+pub struct IssueManagement {
+    pub system: Option<String>,
     pub url: Option<String>,
 }
 
