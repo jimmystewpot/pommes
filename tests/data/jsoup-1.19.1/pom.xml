@@ -5,9 +5,9 @@
 
   <groupId>org.jsoup</groupId>
   <artifactId>jsoup</artifactId>
-  <version>1.13.1</version>
-  <description>jsoup is a Java library for working with real-world HTML. It provides a very convenient API for extracting and manipulating data, using the best of DOM, CSS, and jquery-like methods. jsoup implements the WHATWG HTML5 specification, and parses HTML to the same DOM as modern browsers do.</description>
+  <version>1.19.1-SNAPSHOT</version><!-- remember to update previous version below for japicmp -->
   <url>https://jsoup.org/</url>
+  <description>jsoup is a Java library that simplifies working with real-world HTML and XML. It offers an easy-to-use API for URL fetching, data parsing, extraction, and manipulation using DOM API methods, CSS, and xpath selectors. jsoup implements the WHATWG HTML5 specification, and parses HTML to the same DOM as modern browsers.</description>
   <inceptionYear>2009</inceptionYear>
   <issueManagement>
     <system>GitHub</system>
@@ -24,33 +24,52 @@
     <url>https://github.com/jhy/jsoup</url>
     <connection>scm:git:https://github.com/jhy/jsoup.git</connection>
     <!-- <developerConnection>scm:git:git@github.com:jhy/jsoup.git</developerConnection> -->
-    <tag>jsoup-1.13.1</tag>
+    <tag>HEAD</tag>
   </scm>
   <organization>
     <name>Jonathan Hedley</name>
-    <url>https://jhy.io/</url>
+    <url>https://jhedley.com/</url>
   </organization>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jetty.version>9.4.57.v20241219</jetty.version>
+  </properties>
 
   <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.14.0</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
           <encoding>UTF-8</encoding>
+          <useIncrementalCompilation>false</useIncrementalCompilation>
+          <compilerArgs>
+            <arg>-Xpkginfo:always</arg>
+          </compilerArgs>
         </configuration>
+        <executions>
+          <!-- Disable the default compile, so the profiles activated below execute -->
+          <execution>
+            <id>default-compile</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>default-testCompile</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
       </plugin>
+
+      <!-- Ensure Java 8 and Android 10 API compatibility -->
       <plugin>
-        <!-- this plugin allows us to ensure Java 7 API compatibility -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.16</version>
+        <version>1.24</version>
         <executions>
           <execution>
-            <id>animal-sniffer</id>
+            <id>api-java8</id>
             <phase>compile</phase>
             <goals>
               <goal>check</goal>
@@ -58,14 +77,55 @@
             <configuration>
               <signature>
                 <groupId>org.codehaus.mojo.signature</groupId>
-                <artifactId>java17</artifactId>
+                <artifactId>java18</artifactId>
                 <version>1.0</version>
               </signature>
+              <ignores>
+                <ignore>java.net.HttpURLConnection</ignore><!-- .setAuthenticator(java.net.Authenticator) in Java 9; only used in multirelease 9+ version -->
+                <ignore>java.net.http.*</ignore><!-- HttpClient in Java 11; only used in multirelease 11+ version -->
+              </ignores>
+            </configuration>
+          </execution>
+          <execution>
+            <id>api-android21</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
               <signature>
-                <groupId>net.sf.androidscents.signature</groupId>
-                <artifactId>android-api-level-8</artifactId>
-                <version>2.2_r3</version>
+                <groupId>com.toasttab.android</groupId>
+                <artifactId>gummy-bears-api-21</artifactId>
+                <version>0.10.0</version>
+                <!-- <classifier>coreLib2</classifier> -->
+                <!-- ^^ https://github.com/open-toast/gummy-bears says coreLib2 classifier for desugar should work, but I can't seem to wrangle Animal Sniffer to support that, so reverting to ignores for desugar -->
               </signature>
+              <ignores>
+                <ignore>java.io.File</ignore> <!-- File#toPath() -->
+                <ignore>java.nio.file.*</ignore>
+                <ignore>java.nio.channels.SeekableByteChannel</ignore>
+                <ignore>java.util.function.*</ignore>
+                <ignore>java.util.stream.*</ignore>
+                <ignore>java.lang.ThreadLocal</ignore>
+                <ignore>java.io.UncheckedIOException</ignore>
+                <ignore>java.util.Comparator</ignore> <!-- Comparator.comparingInt() -->
+                <ignore>java.util.List</ignore> <!-- List#stream() -->
+                <ignore>java.util.ArrayList</ignore> <!-- List / ArrayList #sort() -->
+                <ignore>java.util.LinkedHashMap</ignore> <!-- LinkedHashMap#computeIfAbsent() -->
+                <ignore>java.util.Map</ignore> <!-- Map#computeIfAbsent() -->
+                <ignore>java.util.Objects</ignore>
+                <ignore>java.util.Optional</ignore>
+                <ignore>java.util.Set</ignore> <!-- Set#stream() -->
+                <ignore>java.util.Spliterator</ignore>
+                <ignore>java.util.Spliterators</ignore>
+                <ignore>java.nio.ByteBuffer</ignore> <!-- .flip(); added in API1; possibly due to .flip previously returning Buffer, later ByteBuffer; return unused -->
+                <ignore>java.net.HttpURLConnection</ignore><!-- .setAuthenticator(java.net.Authenticator) in Java 9; only used in multirelease 9+ version -->
+                <!-- HttpClient and following in Java 11; only used in multirelease 11+ version, guarded and not on Android -->
+                <ignore>java.net.http.*</ignore>
+                <ignore>java.time.Duration</ignore>
+                <ignore>java.util.OptionalLong</ignore>
+              </ignores>
+              <!-- ^ Provided by https://developer.android.com/studio/write/java8-support#library-desugaring -->
             </configuration>
           </execution>
         </executions>
@@ -73,15 +133,15 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.11.2</version>
         <configuration>
-            <doclint>none</doclint>
-            <source>7</source>
+          <doclint>none</doclint>
+          <source>8</source>
+          <linksource>true</linksource>
         </configuration>
         <executions>
           <execution>
             <id>attach-javadoc</id>
-            <phase>verify</phase>
             <goals>
               <goal>jar</goal>
             </goals>
@@ -91,7 +151,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.3.1</version>
         <configuration>
           <excludes>
             <exclude>org/jsoup/examples/**</exclude>
@@ -100,9 +160,8 @@
         <executions>
           <execution>
             <id>attach-sources</id>
-            <phase>verify</phase>
             <goals>
-              <goal>jar</goal>
+              <goal>jar-no-fork</goal>
             </goals>
           </execution>
         </executions>
@@ -110,23 +169,57 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
+        <version>3.4.2</version>
         <configuration>
           <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
             <manifestEntries>
-              <Automatic-Module-Name>org.jsoup</Automatic-Module-Name>
+              <Multi-Release>true</Multi-Release>
             </manifestEntries>
             <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
           </archive>
-          <excludes>
-            <exclude>org/jsoup/examples/**</exclude>
-          </excludes>
         </configuration>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <excludes>
+                <exclude>org/jsoup/examples/**</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>jar-examples</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>examples</classifier>
+              <includes>
+                <include>org/jsoup/**</include>
+                <include>org/jsoup/examples/**</include>
+              </includes>
+              <archive>
+                <manifest>
+                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                  <mainClass>org.jsoup.examples.HtmlToPlainText</mainClass>
+                </manifest>
+              </archive>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.5.4</version>
+        <version>5.1.9</version>
         <executions>
           <execution>
             <id>bundle-manifest</id>
@@ -139,21 +232,32 @@
         <configuration>
           <instructions>
             <Bundle-DocURL>https://jsoup.org/</Bundle-DocURL>
+            <Export-Package>org.jsoup.*</Export-Package>
+            <Import-Package>!org.jsoup.*,org.jspecify.annotations;version=!;resolution:=optional,*</Import-Package>
           </instructions>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.3.1</version>
       </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.3</version>
+        <version>3.1.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+        <configuration>
+          <!-- smaller stack to find stack overflows. Was 256, but Zulu on MacOS ARM needs >= 640 -->
+          <argLine>-Xss640k</argLine>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.0.0-M3</version>
+        <version>3.5.2</version>
         <executions>
           <execution>
             <goals>
@@ -167,16 +271,63 @@
           <threadCount>8</threadCount>
         </configuration>
       </plugin>
+      <plugin>
+        <!-- API version compat check - https://siom79.github.io/japicmp/ -->
+        <groupId>com.github.siom79.japicmp</groupId>
+        <artifactId>japicmp-maven-plugin</artifactId>
+        <version>0.23.1</version>
+        <configuration>
+          <!-- hard code previous version; can't detect when running stateless on build server -->
+          <oldVersion>
+            <dependency>
+              <groupId>org.jsoup</groupId>
+              <artifactId>jsoup</artifactId>
+              <version>1.18.3</version>
+              <type>jar</type>
+            </dependency>
+          </oldVersion>
+          <parameter>
+            <!-- jsoup policy is ok to remove deprecated methods on minor but not builds. will need to temp remove on bump to 1.15.1 and manually validate -->
+            <onlyModified>false</onlyModified>
+            <breakBuildOnBinaryIncompatibleModifications>true</breakBuildOnBinaryIncompatibleModifications>
+            <breakBuildOnSourceIncompatibleModifications>true</breakBuildOnSourceIncompatibleModifications>
+            <excludes>
+              <!-- <exclude>@java.lang.Deprecated</exclude> -->
+              <exclude>org.jsoup.UncheckedIOException</exclude>
+              <exclude>org.jsoup.nodes.Element</exclude> <!-- forEach previously deprecated -->
+            </excludes>
+            <overrideCompatibilityChangeParameters>
+              <!-- allows new default and move to default methods. compatible as long as existing binaries aren't making calls via reflection. if so, they need to catch errors anyway. -->
+              <overrideCompatibilityChangeParameter>
+                <compatibilityChange>METHOD_NEW_DEFAULT</compatibilityChange>
+                <binaryCompatible>true</binaryCompatible>
+                <sourceCompatible>true</sourceCompatible>
+              </overrideCompatibilityChangeParameter>
+              <overrideCompatibilityChangeParameter>
+                <compatibilityChange>METHOD_ABSTRACT_NOW_DEFAULT</compatibilityChange>
+                <binaryCompatible>true</binaryCompatible>
+                <sourceCompatible>true</sourceCompatible>
+              </overrideCompatibilityChangeParameter>
+            </overrideCompatibilityChangeParameters>
+          </parameter>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>cmp</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
     <resources>
       <resource>
         <directory>./</directory>
-        <targetPath>META-INF/</targetPath>
+        <targetPath>META-INF/jsoup/</targetPath>
         <filtering>false</filtering>
         <includes>
           <include>LICENSE</include>
-          <include>README.md</include>
-          <include>CHANGES</include>
         </includes>
       </resource>
     </resources>
@@ -196,6 +347,111 @@
   </distributionManagement>
 
   <profiles>
+    <!-- Profile for Java 8 -->
+    <profile>
+      <id>java-8</id>
+      <activation>
+        <jdk>1.8</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>compile</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>compile</goal>
+                  <goal>testCompile</goal>
+                </goals>
+                <configuration>
+                  <source>1.8</source>
+                  <target>1.8</target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Compiles the multi-release jar when executed on JDK11+ -->
+    <profile>
+      <id>compile-multi-release</id>
+      <activation>
+        <jdk>[11,2000)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+
+              <execution>
+                <id>compile-java-8</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>compile</goal>
+                  <goal>testCompile</goal>
+                </goals>
+                <configuration>
+                  <release>8</release>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>compile-java-11</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>compile</goal>
+                </goals>
+                <configuration>
+                  <release>11</release>
+                  <compileSourceRoots>
+                    <compileSourceRoot>${project.basedir}/src/main/java11</compileSourceRoot>
+                  </compileSourceRoots>
+                  <multiReleaseOutput>true</multiReleaseOutput>
+                </configuration>
+              </execution>
+
+              <!-- Tests for multi-release jar on 11: mark tests to be compiled; then and add to class path -->
+              <execution>
+                <id>testcompile-java-11</id>
+                <phase>test-compile</phase>
+                <goals>
+                  <goal>testCompile</goal>
+                </goals>
+                <configuration>
+                  <release>11</release>
+
+                  <compileSourceRoots>
+                    <compileSourceRoot>${project.basedir}/src/test/java11</compileSourceRoot>
+                  </compileSourceRoots>
+                </configuration>
+              </execution>
+
+            </executions>
+          </plugin>
+
+          <!-- Add the Java 11-specific test directory to the test runtime classpath -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <additionalClasspathElements>
+                <additionalClasspathElement>${project.build.outputDirectory}/META-INF/versions/11</additionalClasspathElement>
+              </additionalClasspathElements>
+              <useModulePath>false</useModulePath>  <!-- tests use classpath -->
+            </configuration>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+
     <profile>
       <id>release-sign-artifacts</id>
       <activation>
@@ -212,7 +468,7 @@
             <executions>
               <execution>
                 <id>sign-artifacts</id>
-                <phase>verify</phase>
+                <phase>package</phase>
                 <goals>
                   <goal>sign</goal>
                 </goals>
@@ -228,7 +484,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>2.22.0</version>
+            <version>3.5.2</version>
             <executions>
               <execution>
                 <goals>
@@ -245,11 +501,11 @@
 
   <dependencies>
 
+    <!-- junit -->
     <dependency>
-      <!-- junit -->
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.1</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.12.0</version>
       <scope>test</scope>
     </dependency>
 
@@ -257,37 +513,47 @@
       <!-- gson, to fetch entities from w3.org -->
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.8.9</version>
+      <version>2.12.1</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
-      <!-- jetty for webserver integration tests. 9.2 is last with Java7 support -->
+      <!-- jetty for webserver integration tests. 9.x is last with Java7 support -->
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.4.55.v20240627</version>
+      <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
-
 
     <dependency>
       <!-- jetty for webserver integration tests -->
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.26.v20200117</version>
+      <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <!-- jetty proxy, for integration tests -->
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-proxy</artifactId>
+      <version>${jetty.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <!-- org.jspecify.annotations.nonnull, with Apache 2 license. Build time only. -->
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
+      <version>1.0.0</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <dependencyManagement>
     <dependencies>
     </dependencies>
   </dependencyManagement>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
 
   <developers>
     <developer>
@@ -302,4 +568,3 @@
   </developers>
 
 </project>
-jsoup-pom-version-bump
